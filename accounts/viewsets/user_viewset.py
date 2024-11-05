@@ -18,3 +18,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         # Salva o usuário usando o serializer
         serializer.save()
+
+    def perform_update(self, serializer):
+        # Atualiza o usuário usando o serializer
+        serializer.save()
