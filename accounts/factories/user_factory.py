@@ -8,11 +8,11 @@ class UserFactory(factory.django.DjangoModelFactory):
 
     # Gera valores padrão para os campos
     name = factory.Faker('name')
-    username = factory.Faker('user_name')
     email = factory.Faker('email')
 
-    # Gera uma senha padrão, criptografando-a corretamente
+    # Gera uma senha padrão e um username respeitando as exigência
     password = factory.LazyFunction(lambda: make_password('Password123'))
+    username = factory.LazyAttribute(lambda obj: f'@{obj.name.lower().replace(" ", "_")}')
 
     # Define se o usuário está ativo
     is_active = True
