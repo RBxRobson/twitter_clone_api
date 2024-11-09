@@ -30,7 +30,6 @@ class User(AbstractBaseUser):
     name = models.CharField(max_length=50)
     username = models.CharField(max_length=50, unique=True)
     email = models.EmailField(max_length=100, unique=True)
-    password = models.CharField(max_length=128)  # Campo explícito para a senha
 
     # Status do usuário
     is_active = models.BooleanField(default=True)
