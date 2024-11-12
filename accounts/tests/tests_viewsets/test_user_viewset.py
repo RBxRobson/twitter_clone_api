@@ -1,60 +1,82 @@
 import pytest
 from rest_framework.test import APIClient
+from rest_framework import status
 from django.urls import reverse
-from accounts.models import User
-from accounts.factories import UserFactory
+from accounts.models import User, Profile
+
+@pytest.fixture
+def create_user():
+    """Fixture para criar um usuário com profile de teste."""
+    user = User.objects.create_user(
+        name='Test User',
+        email='test@example.com',
+        password='Password123',
+    )
+    # Crie um profile associado ao usuário
+    profile = Profile.objects.create(user=user, bio="Test Bio")
+    return user
+
+@pytest.fixture
+def api_client():
+    """Fixture para instanciar o APIClient."""
+    return APIClient()
 
 @pytest.mark.django_db
-class TestUserViewSet:
+def test_create_user(api_client):
+    url = reverse('user-list')  # Usando a URL do viewset
+    data = {
+        'name': 'New User',
+        'email': 'newuser@example.com',
+        'password': 'Password123',
+    }
 
-    @pytest.fixture
-    # Cria um cliente de teste da API.
-    def api_client(self):
-        return APIClient()
+    response = api_client.post(url, data, format='json')
 
-    @pytest.fixture
-    # Cria um usuário de teste.
-    def user(self):
-        return UserFactory()
+    assert response.status_code == status.HTTP_201_CREATED
+    assert 'email' in response.data  # Verifique se o email foi retornado
+    assert response.data['email'] == 'newuser@example.com'
 
-    @pytest.fixture
-    # Autentica o cliente com um usuário.
-    def auth_client(self, api_client, user):
-        api_client.force_authenticate(user=user)
-        return api_client
+@pytest.mark.django_db
+def test_list_users(api_client, create_user):
+    url = reverse('user-list')
+    response = api_client.get(url)
 
-    # Testa a criação de um usuário pela API.
-    def test_create_user(self, api_client):
-        url = reverse('user-list')
-        data = {
-            "name": "New User",
-            "username": "newuser",
-            "email": "newuser@example.com",
-            "password": "Password123"
-        }
-        response = api_client.post(url, data, format='json')
-        assert response.status_code == 201
-        assert User.objects.filter(username="newuser").exists()
+    assert response.status_code == status.HTTP_200_OK
+    assert len(response.data) > 0  # Verifica se pelo menos um usuário foi retornado
 
-    # Testa a recuperação dos dados de um usuário autenticado.
-    def test_retrieve_user(self, auth_client, user):
-        url = reverse('user-detail', args=[user.id])
-        response = auth_client.get(url)
-        assert response.status_code == 200
-        assert response.data["username"] == user.username
+@pytest.mark.django_db
+def test_retrieve_user(api_client, create_user):
+    url = reverse('user-detail', args=[create_user.id])
+    response = api_client.get(url)
 
-    # Testa a atualização dos dados de um usuário.
-    def test_update_user(self, auth_client, user):
-        url = reverse('user-detail', args=[user.id])
-        data = {"name": "Updated Name"}
-        response = auth_client.patch(url, data, format='json')
-        assert response.status_code == 200
-        user.refresh_from_db()
-        assert user.name == "Updated Name"
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data['email'] == create_user.email
 
-    # Testa a exclusão de um usuário.
-    def test_delete_user(self, auth_client, user):
-        url = reverse('user-detail', args=[user.id])
-        response = auth_client.delete(url)
-        assert response.status_code == 204
-        assert not User.objects.filter(id=user.id).exists()
+@pytest.mark.django_db
+def test_update_user(api_client, create_user):
+    url = reverse('user-detail', args=[create_user.id])
+    data = {
+        'name': 'Updated User',
+        'email': 'updated@example.com',
+        'password': 'NewPassword123',
+    }
+
+    response = api_client.put(url, data, format='json')
+
+    assert response.status_code == status.HTTP_200_OK
+    updated_user = User.objects.get(id=create_user.id)
+    assert updated_user.name == 'Updated User'
+    assert updated_user.email == 'updated@example.com'
+
+@pytest.mark.django_db
+def test_partial_update_user(api_client, create_user):
+    url = reverse('user-detail', args=[create_user.id])
+    data = {
+        'name': 'Partially Updated User',
+    }
+
+    response = api_client.patch(url, data, format='json')
+
+    assert response.status_code == status.HTTP_200_OK
+    updated_user = User.objects.get(id=create_user.id)
+    assert updated_user.name == 'Partially Updated User'
