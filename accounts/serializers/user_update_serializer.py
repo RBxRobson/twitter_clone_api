@@ -23,7 +23,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         return value
 
     def update(self, instance, validated_data):
-        profile_data = validated_data.pop('profile')
+        profile_data = validated_data.pop('profile', None)
 
         # Limpa campos vazios de validated_data para evitar sobrescrita no banco
         validated_data = {k: v for k, v in validated_data.items() if v not in [None, ""]}
