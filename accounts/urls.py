@@ -10,5 +10,6 @@ router.register(r"users", viewsets.UserViewSet, basename="user")
 
 urlpatterns = [
     # Inclui todas as rotas do roteador na raiz ('').
-    path("", include(router.urls))
+    path("", include(router.urls)),
+    path("login/", viewsets.LoginView.as_view(), name="login"),
 ]
