@@ -1,6 +1,6 @@
 from django.db import models
 from accounts.models import User
-from posting.models import Post
+from .post import Post
 
 class Share(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='shares')
