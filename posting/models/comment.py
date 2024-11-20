@@ -1,22 +1,50 @@
 from django.db import models
 from accounts.models import User
-from .post import Post
+from posting.models import Post
 
 class Comment(models.Model):
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
+    # Usuário que fez o comentário
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comments")
+    
+    # Conteúdo do comentário
     content = models.TextField(max_length=280)
 
-    # Auto-referência para suporte a comentários aninhados
+    # Relacionamento com um Post (se o comentário é feito diretamente em um Post)
+    post = models.ForeignKey(Post, null=True, blank=True, on_delete=models.CASCADE, related_name="comments")
+
+    # Relacionamento com outro Comentário (se o comentário é uma resposta)
     parent_comment = models.ForeignKey(
-        'self', null=True, blank=True, on_delete=models.CASCADE, related_name='replies'
+        'self',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="replies"
     )
 
-    like_count = models.PositiveIntegerField(default=0)
-    comment_count = models.PositiveIntegerField(default=0)
+    # Campos para tracking
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    # Contadores
+    likes_count = models.PositiveIntegerField(default=0)
+    replies_count = models.PositiveIntegerField(default=0)
 
     def __str__(self):
-        if self.parent_comment:
-            return f'Reply by {self.author.username} on comment {self.parent_comment.id}'
-        return f'Comment by {self.author.username} on post {self.post.id} at {self.created_at}'
+        return f"Comment by {self.user.username}: {self.content[:30]}..."
+
+    class Meta:
+        # Comentários mais recentes primeiro
+        ordering = ['-created_at']
+
+class CommentLike(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comment_likes")
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name="likes")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        # Um usuário só pode curtir um comentário uma vez
+        unique_together = ('user', 'comment')  
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} liked Comment ID {self.comment.id}"

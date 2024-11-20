@@ -1,19 +1,18 @@
 from django.db import models
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
 from accounts.models import User
+from posting.models import Post
 
 class Like(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='likes')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="likes")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="likes")
     created_at = models.DateTimeField(auto_now_add=True)
 
-    # Campos para GenericForeignKey
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')
-
     class Meta:
-        unique_together = ('user', 'content_type', 'object_id')  # Garante uma curtida única por usuário em cada objeto
+        # Evita duplicatas (um usuário só pode curtir um post uma vez)
+        unique_together = ('user', 'post')  
+        # Likes mais recentes primeiro
+        ordering = ['-created_at']  
 
     def __str__(self):
-        return f'{self.user.username} liked {self.content_object}'
+        return f"{self.user.username} liked Post ID {self.post.id}"
+
