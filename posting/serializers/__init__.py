@@ -1,5 +1,3 @@
-from .comment_serializer import CommentSerializer
+from .comment_serializer import CommentSerializer, CommentLikeSerializer
 from .like_serializer import LikeSerializer
-from .post_interactions_serializer import PostInteractionsSerializer
-from .share_serializer import ShareSerializer
 from .post_serializer import PostSerializer

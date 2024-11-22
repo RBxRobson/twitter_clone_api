@@ -1,15 +1,26 @@
 from rest_framework import serializers
-from posting.models import Like
-from django.contrib.contenttypes.models import ContentType
+from posting.models import Like, Post
+from accounts.models import User
 
 class LikeSerializer(serializers.ModelSerializer):
-    content_type = serializers.SlugRelatedField(
-        slug_field='model',
-        queryset=ContentType.objects.all()
-    )
-    object_id = serializers.IntegerField()
-
+    # Relacionamento com o usuário
+    user = serializers.SlugRelatedField(slug_field='username', queryset=User.objects.all())
+    
+    # Relacionamento com o post
+    post = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all())
+    
     class Meta:
         model = Like
-        fields = ['id', 'user', 'content_type', 'object_id', 'created_at']
-        read_only_fields = ['id', 'created_at']
+        fields = ['id', 'user', 'post', 'created_at']
+        read_only_fields = ['created_at']
+
+    def validate(self, data):
+        # Verifica se o usuário já curtiu o post
+        if Like.objects.filter(user=data['user'], post=data['post']).exists():
+            raise serializers.ValidationError("Você já curtiu o post.")
+        return data
+
+    def create(self, validated_data):
+        # Cria a curtir (like) se a validação passar
+        like = Like.objects.create(**validated_data)
+        return like
