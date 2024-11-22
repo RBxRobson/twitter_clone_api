@@ -116,3 +116,6 @@ dmypy.json
 
 # Pycharm
 .idea/
+
+# APENAS EM DESENVOLVIMENTO
+migrations
