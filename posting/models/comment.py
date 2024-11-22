@@ -1,6 +1,6 @@
 from django.db import models
 from accounts.models import User
-from posting.models import Post
+from .post import Post
 
 class Comment(models.Model):
     # Usuário que fez o comentário
@@ -47,4 +47,4 @@ class CommentLike(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.user.username} liked Comment ID {self.comment.id}"
+        return f"{self.user.username} curtiu o comentário de ID: {self.comment.id}"

@@ -1,6 +1,6 @@
 from django.db import models
 from accounts.models import User
-from posting.models import Post
+from .post import Post
 
 class Like(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="likes")
@@ -14,5 +14,5 @@ class Like(models.Model):
         ordering = ['-created_at']  
 
     def __str__(self):
-        return f"{self.user.username} liked Post ID {self.post.id}"
+        return f"{self.user.username} curtiu o Post de ID: {self.post.id}"
 

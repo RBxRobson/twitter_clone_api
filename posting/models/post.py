@@ -33,20 +33,8 @@ class Post(models.Model):
 
     def __str__(self):
         if self.original_post:
-            return f"{'Quote' if self.is_quote else 'Repost'} by {self.user.username}: {self.content[:30]}..."
-        return f"Post by {self.user.username}: {self.content[:30]}..."
-
-    def clean(self):
-        """
-        Validações:
-        - Um post marcado como is_quote=True deve ter um original_post.
-        - Um repost ou quote não pode referenciar outro repost ou quote.
-        """
-        if self.is_quote and not self.original_post:
-            raise ValidationError("A quote must reference an original post.")
-        if self.original_post and self.original_post.original_post:
-            raise ValidationError("A repost cannot reference another repost.")
-        super().clean()
+            return f"{'Citação' if self.is_quote else 'Repostagem'} de {self.user.username}: {self.content[:30]}..."
+        return f"Postagem de {self.user.username}: {self.content[:30]}..."
 
     class Meta:
         # Exibe os posts mais recentes primeiro
