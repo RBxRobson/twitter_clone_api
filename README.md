@@ -1,66 +1,195 @@
-# Readme ainda está em criação atualmente é apenas um rascunho lembrete
+# Documentação da API (Em Desenvolvimento)
 
-## Rotas:
+Este documento serve como referência para as rotas e funcionalidades disponíveis na API.
 
-### Login:
+---
 
-URLAPP/accounts/login/
+## Rotas
 
-#### Campos Json:
+### Autenticação
 
-username e password
+#### Login
 
-### CRUD Users:
+- URL: `URLAPP/accounts/login/`
+- Método: POST
+- Campos JSON:
 
-#### Rota default
-
-URLAPP/accounts/users/
-
-#### Campos Json para criação de usuário:
-
-name, email e password
-
-#### Acessar usuário
-
-URLAPP/accounts/users/#USERID#/
-
-#### Formato Json para alterações no usuário
-
+```json
 {
-name: obrigatório(vai ser alterado futuramente)
-email: obrigatório(vai ser alterado futuramente)
-profile: { opcionais
-bio:
-avatar: URL
-header: URL
+  "username": "string",
+  "password": "string"
 }
+```
+
+---
+
+### Gerenciamento de Usuários (CRUD)
+
+#### Lista de Usuários
+
+- URL: `URLAPP/accounts/users/`
+- Método: GET
+
+#### Criação de Usuário
+
+- URL: `URLAPP/accounts/users/`
+- Método: POST
+- Campos JSON:
+
+```json
+{
+  "name": "string",
+  "email": "string",
+  "password": "string"
 }
+```
 
-### CRUD Post (Tweets)
+#### Detalhes do Usuário
 
-Para todas os métodos envolvendo a rota postings/, é necessário token de autenticação gerado pelo jwt no login do usuário
+- URL: `URLAPP/accounts/users/{USER_ID}/`
+- Método: GET
 
-#### Rota default
+#### Atualização de Usuário
 
-URLAPP/postings/posts/
+- URL: `URLAPP/accounts/users/{USER_ID}/`
+- Método: PUT/PATCH
+- Formato JSON:
 
-#### Campos Json para criação de post:
+```json
+{
+  "name": "string (obrigatório)",
+  "email": "string (obrigatório)",
+  "profile": {
+    "bio": "string (opcional)",
+    "avatar": "URL (opcional)",
+    "header": "URL (opcional)"
+  }
+}
+```
 
-author(username) e content
+---
 
-#### Acessar post
+### Gerenciamento de Postagens (CRUD)
 
-URLAPP/accounts/users/#POSTID#/
+#### Observação
 
-#### Comentar post
+Todas as operações nesta seção requerem autenticação via token JWT, gerado no login.
 
-URLAPP/accounts/users/#POSTID#/comment/
+#### Lista de Postagens
 
-#### Campos Json para comentarios
+- URL: `URLAPP/postings/posts/`
+- Método: GET
 
-Para um comentário em um post apenas o campo "content", para resposta a um comentário deve ser incluído o campo "parent_comment" com o id do comentário a ser respondido
+#### Lista de Likes de uma postagem
 
-#### Curtir um post
+- URL: `URLAPP/postings/posts/{POST_ID}/likes/`
+- Método: GET
 
-URLAPP/accounts/users/#POSTID#/like/
-OBS: Sem campos a serem preenchidos
+#### Lista de Comentários de uma postagem
+
+- URL: `URLAPP/postings/posts/{POST_ID}/comments/`
+- Método: GET
+
+#### Lista de Likes de um comentário
+
+- URL: `URLAPP/postings/posts/{POST_ID}/comments/{COMMENT_ID}/likes/`
+- Método: GET
+
+#### Lista de respostas de um comentário
+
+- URL: `URLAPP/postings/posts/{POST_ID}/comments/{COMMENT_ID}/replies/`
+- Método: GET
+
+#### Criação de Postagem
+
+- URL: `URLAPP/postings/posts/`
+- Método: POST
+- Campos JSON:
+
+```json
+{
+  "author": "string (username)",
+  "content": "string"
+}
+```
+
+### Interações com Postagens
+
+#### Repostar ou Citar uma Postagem
+
+- URL: `URLAPP/postings/posts/`
+- Método: POST
+- Formato JSON para Repostar:
+
+```json
+{
+  "user": "string (username)",
+  "original_post": "integer (ID da postagem)"
+}
+```
+
+- Formato JSON para Citar:
+
+```json
+{
+  "user": "string (username)",
+  "original_post": "integer (ID da postagem)",
+  "content": "string",
+  "is_quote": true
+}
+```
+
+#### Curtir uma Postagem
+
+- URL: `URLAPP/postings/posts/{POST_ID}/likes/`
+- Método: POST
+- Campos JSON:
+
+```json
+{
+  "user": "string (username)",
+  "post": "integer (ID do post)"
+}
+```
+
+#### Comentar em uma Postagem
+
+- URL: `URLAPP/postings/posts/{POST_ID}/comments/`
+- Método: POST
+- Campos JSON:
+
+```json
+{
+  "user": "string (username)",
+  "content": "string",
+  "post": "integer (ID do post)"
+}
+```
+
+#### Responder a um Comentário
+
+- URL: `URLAPP/postings/posts/{POST_ID}/comments/`
+- Método: POST
+- Campos JSON:
+
+```json
+{
+  "user": "string (username)",
+  "content": "string",
+  "post": "integer (ID do post)",
+  "parent_comment": "integer (ID do comentário pai)"
+}
+```
+
+#### Curtir um Comentário
+
+- URL: `URLAPP/postings/posts/{POST_ID}/comments/{COMMENT_ID}/likes/`
+- Método: POST
+- Campos JSON:
+
+```json
+{
+  "user": "string (username)",
+  "comment": "integer (ID do comentário)"
+}
+```
