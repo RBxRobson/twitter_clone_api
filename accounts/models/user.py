@@ -31,6 +31,14 @@ class User(AbstractBaseUser):
     username = models.CharField(max_length=50, unique=True)
     email = models.EmailField(max_length=100, unique=True)
 
+    # Relacionamentos para seguidores e seguidos
+    followers = models.ManyToManyField(
+        'self', 
+        related_name='following', 
+        symmetrical=False, 
+        blank=True
+    )
+
     # Status do usuário
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
