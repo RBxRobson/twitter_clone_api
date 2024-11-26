@@ -49,6 +49,22 @@ Este documento serve como referência para as rotas e funcionalidades disponíve
 - URL: `URLAPP/accounts/users/{USER_ID}/`
 - Método: GET
 
+#### Listagem de seguidores
+
+- URL: `URLAPP/accounts/users/{USER_ID}/followers/`
+- Método: GET
+
+#### Listagem de seguindo
+
+- URL: `URLAPP/accounts/users/{USER_ID}/following/`
+- Método: GET
+
+#### Seguir ou deixar de seguir
+
+- URL: `URLAPP/accounts/users/{USER_ID}/follow/`
+- URL: `URLAPP/accounts/users/{USER_ID}/unfollow/`
+- Método: POST
+
 #### Atualização de Usuário
 
 - URL: `URLAPP/accounts/users/{USER_ID}/`
