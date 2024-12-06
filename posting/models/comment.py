@@ -5,7 +5,7 @@ from .post import Post
 class Comment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comments")
     
-    # O comentário pode ser em um post ou resposta a outro comentário
+    # O comentário pode ser diretamente em um post ou resposta a outro comentário desse post
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
     parent_comment = models.ForeignKey(
         'self', 
