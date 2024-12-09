@@ -1,50 +1,59 @@
 from rest_framework import serializers
-from posting.models import Comment, CommentLike, Post
-from accounts.models import User
+from posting.models import Comment
 
 class CommentSerializer(serializers.ModelSerializer):
-    user = serializers.SlugRelatedField(slug_field='username', queryset=User.objects.all())
-    post = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all(), required=False)
-    parent_comment = serializers.PrimaryKeyRelatedField(queryset=Comment.objects.all(), required=False)
-    
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+    post = serializers.PrimaryKeyRelatedField(read_only=True)
+    user_details = serializers.SerializerMethodField()
+    parent_comment = serializers.PrimaryKeyRelatedField(queryset=Comment.objects.all(), required=False, allow_null=True)
+
+    # Contadores
+    likes_count = serializers.SerializerMethodField()
+    replies_count = serializers.SerializerMethodField()
+
     class Meta:
         model = Comment
-        fields = ['id', 'user', 'content', 'post', 'parent_comment', 'created_at', 'updated_at', 'likes_count', 'replies_count']
-        read_only_fields = ['created_at', 'updated_at', 'likes_count', 'replies_count']
+        fields = [
+            'id', 'user', 'content', 'post', 'parent_comment', 'user_details',
+            'created_at', 'updated_at', 'likes_count', 'replies_count'
+        ]
+        read_only_fields = ['created_at', 'updated_at', 'likes_count', 'replies_count', 'user_details', 'user', 'post']
 
-    def validate(self, data):
-        # Verifica se o comentário está sendo feito no post ou em outro comentário
-        if not data.get('post') and not data.get('parent_comment'):
-            raise serializers.ValidationError("A comment must be related to a post or another comment.")
-        return data
+    # Retorna o número de likes associados ao comentário.
+    def get_likes_count(self, obj):
+        return obj.likes.count()
+
+    # Retorna o número de respostas associadas ao comentário.
+    def get_replies_count(self, obj):
+        return obj.replies.count()
     
-    def create(self, validated_data):
-        # Criação do comentário
-        comment = Comment.objects.create(**validated_data)
-        return comment
+    def get_user_details(self, obj):
+        # Obtém o perfil do usuário associado e retorna os dados completos
+        profile = obj.user.profile
+        return {
+            "id": obj.user.id,
+            "name": obj.user.name,
+            "username": obj.user.username,
+            "avatar": profile.avatar.url
+        }
 
+    # Lista as respostas do comentário
     def get_replies(self, obj):
-        # Lista as respostas do comentário
         if obj.parent_comment.exists():
             return CommentSerializer(obj.parent_comment.all(), many=True).data
         return []
 
-class CommentLikeSerializer(serializers.ModelSerializer):
-    user = serializers.SlugRelatedField(slug_field='username', queryset=User.objects.all())
-    comment = serializers.PrimaryKeyRelatedField(queryset=Comment.objects.all())
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        
+        # Método GET resposta
+        request = self.context.get('request')
+        if request and request.method == 'GET':
+            representation.pop('user', None)
 
-    class Meta:
-        model = CommentLike
-        fields = ['id', 'user', 'comment', 'created_at']
-        read_only_fields = ['created_at']
+        # Método Post resposta
+        request = self.context.get('request')
+        if request and request.method == 'POST':
+            representation.pop('user_details', None)
 
-    def validate(self, data):
-        # Verifica se o usuário já curtiu o comentário
-        if CommentLike.objects.filter(user=data['user'], comment=data['comment']).exists():
-            raise serializers.ValidationError("You have already liked this comment.")
-        return data
-
-    def create(self, validated_data):
-        # Cria o like no comentário
-        comment_like = CommentLike.objects.create(**validated_data)
-        return comment_like
+        return representation
