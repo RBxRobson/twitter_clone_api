@@ -124,7 +124,6 @@ Todas as operações nesta seção requerem autenticação via token JWT, gerado
 
 ```json
 {
-  "author": "string (username)",
   "content": "string"
 }
 ```
@@ -139,7 +138,7 @@ Todas as operações nesta seção requerem autenticação via token JWT, gerado
 
 ```json
 {
-  "user": "string (username)",
+  "post_type": "repost",
   "original_post": "integer (ID da postagem)"
 }
 ```
@@ -148,10 +147,9 @@ Todas as operações nesta seção requerem autenticação via token JWT, gerado
 
 ```json
 {
-  "user": "string (username)",
   "original_post": "integer (ID da postagem)",
   "content": "string",
-  "is_quote": true
+  "post_type": "quote"
 }
 ```
 
@@ -159,14 +157,6 @@ Todas as operações nesta seção requerem autenticação via token JWT, gerado
 
 - URL: `URLAPP/postings/posts/{POST_ID}/likes/`
 - Método: POST
-- Campos JSON:
-
-```json
-{
-  "user": "string (username)",
-  "post": "integer (ID do post)"
-}
-```
 
 #### Comentar em uma Postagem
 
@@ -176,24 +166,19 @@ Todas as operações nesta seção requerem autenticação via token JWT, gerado
 
 ```json
 {
-  "user": "string (username)",
-  "content": "string",
-  "post": "integer (ID do post)"
+  "content": "string"
 }
 ```
 
 #### Responder a um Comentário
 
-- URL: `URLAPP/postings/posts/{POST_ID}/comments/`
+- URL: `URLAPP/postings/posts/{POST_ID}/comments/{COMMENT_ID}/replies/`
 - Método: POST
 - Campos JSON:
 
 ```json
 {
-  "user": "string (username)",
-  "content": "string",
-  "post": "integer (ID do post)",
-  "parent_comment": "integer (ID do comentário pai)"
+  "content": "string"
 }
 ```
 
@@ -201,11 +186,3 @@ Todas as operações nesta seção requerem autenticação via token JWT, gerado
 
 - URL: `URLAPP/postings/posts/{POST_ID}/comments/{COMMENT_ID}/likes/`
 - Método: POST
-- Campos JSON:
-
-```json
-{
-  "user": "string (username)",
-  "comment": "integer (ID do comentário)"
-}
-```
