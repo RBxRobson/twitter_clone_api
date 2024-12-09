@@ -1,45 +1,47 @@
 from django.db import models
 from accounts.models import User
-from django.core.exceptions import ValidationError
 
 class Post(models.Model):
+    ORIGINAL = 'original'
+    REPOST = 'repost'
+    QUOTE = 'quote'
+
+    POST_TYPES = [
+        (ORIGINAL, 'Original'),
+        (REPOST, 'Repost'),
+        (QUOTE, 'Quote'),
+    ]
+
     # Relaciona o post a um usuário
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts")
 
-    # Conteúdo do post (limite baseado no padrão do Twitter)
-    content = models.TextField(max_length=280, blank=True, default='')
+    # Tipo de post (original, repost ou quote)
+    post_type = models.CharField(max_length=10, choices=POST_TYPES, default=ORIGINAL)
 
-    # Post original para citações (quotes) e repostagens
+    # Post original, se for repost ou quote
     original_post = models.ForeignKey(
-        'self',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='related_posts'
+        'self', 
+        null=True, 
+        blank=True, 
+        on_delete=models.CASCADE, 
+        related_name="interactions"
     )
 
-    # Indica se o post é uma citação (quote)
-    is_quote = models.BooleanField(default=False)
+    # Conteúdo do post (só será usado em posts originais e quotes)
+    content = models.TextField(max_length=280, blank=True, default='')
 
-    # Campos para tracking
+    # Campos de tracking
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    # Contadores
-    likes_count = models.PositiveIntegerField(default=0)
-    comments_count = models.PositiveIntegerField(default=0)
-    reposts_count = models.PositiveIntegerField(default=0)
-    quotes_count = models.PositiveIntegerField(default=0)
-
-    def __str__(self):
-        if self.original_post:
-            return f"{'Citação' if self.is_quote else 'Repostagem'} de {self.user.username}: {self.content[:30]}..."
-        return f"Postagem de {self.user.username}: {self.content[:30]}..."
 
     class Meta:
         # Exibe os posts mais recentes primeiro
         ordering = ['-created_at']
-        indexes = [
-            # Otimização de consultas
-            models.Index(fields=['original_post', 'is_quote']),  
-        ]
+
+    def __str__(self):
+        if self.post_type == self.ORIGINAL:
+            return f"Post de {self.user.username}: {self.content[:30]}..."
+        elif self.post_type == self.QUOTE:
+            return f"Citação de {self.user.username} sobre {self.original_post.id}: {self.content[:30]}..."
+        elif self.post_type == self.REPOST:
+            return f"Repost de {self.user.username} sobre {self.original_post.id}"
