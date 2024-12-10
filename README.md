@@ -96,6 +96,11 @@ Todas as operações nesta seção requerem autenticação via token JWT, gerado
 - URL: `URLAPP/postings/posts/`
 - Método: GET
 
+#### Feed de um usuário
+
+- URL: `URLAPP/postings/feed/`
+- Método: GET
+
 #### Lista de Likes de uma postagem
 
 - URL: `URLAPP/postings/posts/{POST_ID}/likes/`
