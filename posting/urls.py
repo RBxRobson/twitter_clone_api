@@ -1,10 +1,11 @@
 from django.urls import path, include
 from rest_framework_nested.routers import DefaultRouter, NestedSimpleRouter
-from posting.viewsets import PostViewSet, CommentViewSet
+from posting.viewsets import PostViewSet, CommentViewSet, FeedViewSet
 
 # Roteador principal
 router = DefaultRouter()
 router.register(r'posts', PostViewSet, basename='post')
+router.register(r'feed', FeedViewSet, basename='feed')
 
 # Nested routers para comentários relacionados a posts
 post_comments_router = NestedSimpleRouter(router, r'posts', lookup='post')
