@@ -25,3 +25,14 @@ def create_user():
     user = serializer.save()
 
     return user, data
+
+"""
+    Função de testes para logar usuário
+""" 
+def perform_login(api_client, email, password):
+    login_url = reverse('login')
+    login_data = {'email': email, 'password': password}
+    response = api_client.post(login_url, data=login_data, format='json')
+    assert response.status_code == status.HTTP_200_OK
+    assert 'access' in response.data
+    return response.data['access']
