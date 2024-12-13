@@ -1,6 +1,6 @@
 import pytest
 from accounts.serializers import UserDetailSerializer
-from accounts.utils import create_user
+from core.utils import create_user
 
 @pytest.mark.django_db
 def test_user_detail_serializer(cleanup_media_and_users):

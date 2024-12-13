@@ -1,6 +1,7 @@
 import pytest
 from accounts.serializers import  UserUpdateSerializer
-from accounts.utils import create_user, create_image
+from accounts.utils import create_image
+from core.utils import create_user
 
 # Função para disparar a atualização de apenas um campo
 def update_user_unique_key(key: str, value: str, assertion=None, profile=False):

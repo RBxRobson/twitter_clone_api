@@ -1,7 +1,6 @@
 import pytest
 from accounts.serializers import UserCreateSerializer
-from accounts.models import User
-from accounts.utils import create_user, get_unique_username
+from core.utils import create_user
 
 # Testa se um usuário está sendo criado corretamente
 @pytest.mark.django_db
