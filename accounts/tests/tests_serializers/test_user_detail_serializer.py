@@ -1,20 +1,21 @@
 import pytest
-from accounts.models import Profile
 from accounts.serializers import UserDetailSerializer
-from accounts.factories import UserFactory
+from core.utils import create_user
 
 @pytest.mark.django_db
-def test_user_detail_serializer():
-    user = UserFactory()
-    Profile.objects.create(user=user)
+def test_user_detail_serializer(cleanup_media_and_users):
+    user, _ = create_user()
 
+    # Chamando o serializer de busca com o user criado antes
     serializer = UserDetailSerializer(user)
-    data = serializer.data
+    data_serializer = serializer.data
 
-    assert data["id"] == user.id
-    assert data["username"] == user.username
-    assert data["name"] == user.name
-    assert data["email"] == user.email
-    assert data["profile"]["bio"] == ""
-    assert data["profile"]["avatar"] == "/media/placeholders/avatar_placeholder.png"
-    assert data["profile"]["header"] == "/media/placeholders/header_placeholder.png"
+    # Validações
+    assert data_serializer["id"] == user.id
+    assert data_serializer["username"] == user.username
+    assert data_serializer["name"] == user.name
+    assert data_serializer["email"] == user.email
+    assert data_serializer["profile"]["bio"] == user.profile.bio
+    assert data_serializer["profile"]["avatar"] == f'/media/{user.profile.avatar.name}'
+    assert data_serializer["profile"]["header"] == f'/media/{user.profile.header.name}'
+

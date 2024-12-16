@@ -14,6 +14,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
         return {
             'bio': instance.profile.bio,
             'avatar': instance.profile.avatar.url,
+            'header': instance.profile.header.url
         }
 
     def get_followers_count(self, instance):

@@ -73,8 +73,10 @@ Este documento serve como referência para as rotas e funcionalidades disponíve
 
 ```json
 {
-  "name": "string (obrigatório)",
-  "email": "string (obrigatório)",
+  "name": "string (opcional)",
+  "email": "string (opcional)",
+  "password": "string (opcional)",
+  "old_password": "string (obrigatório para alteração de senha)",
   "profile": {
     "bio": "string (opcional)",
     "avatar": "URL (opcional)",

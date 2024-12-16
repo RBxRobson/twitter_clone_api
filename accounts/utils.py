@@ -1,3 +1,6 @@
+from django.core.files.uploadedfile import SimpleUploadedFile
+from PIL import Image
+from io import BytesIO
 from accounts.models import User
 
 """
@@ -15,3 +18,13 @@ def get_unique_username(name):
         count += 1
 
     return username
+
+"""
+    Função para gerar uma imagem para testes de campos ImageField
+"""
+def create_image():
+    image = Image.new('RGB', (100, 100), color=(73, 109, 137))
+    img_byte_arr = BytesIO()
+    image.save(img_byte_arr, format='JPEG')
+    img_byte_arr.seek(0)
+    return SimpleUploadedFile("test_image.jpg", img_byte_arr.read(), content_type="image/jpeg")

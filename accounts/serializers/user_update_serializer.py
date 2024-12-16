@@ -1,18 +1,70 @@
 from rest_framework import serializers
 from accounts.models import User
 from .profile_serializer import ProfileSerializer
+from django.core.validators import MinLengthValidator, RegexValidator
 
 class UserUpdateSerializer(serializers.ModelSerializer):
-    # Permite o profile ser opcional para atualização
     profile = ProfileSerializer(required=False)
+    old_password = serializers.CharField(
+        write_only=True,
+        required=False,
+        style={'input_type': 'password'}
+    )
+    password = serializers.CharField(
+        write_only=True,
+        required=False,
+        validators=[
+            MinLengthValidator(8),
+            RegexValidator(
+                regex='^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])',
+                message='A senha deve conter pelo menos uma letra minúscula, uma letra maiúscula e um número.',
+            ),
+        ],
+        style={'input_type': 'password'}
+    )
 
     class Meta:
         model = User
-        fields = ['id', 'name', 'username', 'email', 'password', 'profile']
+        fields = ['id', 'name', 'username', 'email', 'password', 'profile', 'old_password']
         extra_kwargs = {
+            'id': {'read_only': True},
+            'name': {'required': False},
+            'username': {'required': False},
+            'email': {'required': False},
             'password': {'write_only': True, 'required': False},
-            'username': {'write_only': True, 'required': False}
+            'profile': {'required': False},
         }
+
+    def validate(self, attrs):
+        # Verifica se o JSON está vazio
+        if not attrs:
+            raise serializers.ValidationError(
+                "Nenhum dado foi fornecido para atualização."
+            )
+
+        # Verifica se a alteração de senha exige a senha antiga
+        if 'password' in attrs and 'old_password' not in attrs:
+            raise serializers.ValidationError(
+                {"old_password": "A senha antiga é obrigatória para alterar a senha."}
+            )
+
+        # Verifica se a senha antiga está correta
+        if 'old_password' in attrs:
+            user = self.instance  # Instância do usuário sendo atualizada
+            if not user.check_password(attrs['old_password']):
+                raise serializers.ValidationError(
+                    {"old_password": "A senha antiga está incorreta."}
+                )
+        
+        # Verifica se a nova senha é igual à antiga
+        if 'password' in attrs and 'old_password' in attrs:
+            user = self.instance
+            if user.check_password(attrs['password']):
+                raise serializers.ValidationError(
+                    {"password": "A nova senha não pode ser igual à senha antiga."}
+                )
+
+        return attrs
 
     def validate_username(self, value):
         # Verifica se o valor contém apenas caracteres permitidos
@@ -24,6 +76,9 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         profile_data = validated_data.pop('profile', None)
+
+        # Remove a senha antiga dos dados validados
+        validated_data.pop('old_password', None)
 
         # Limpa campos vazios de validated_data para evitar sobrescrita no banco
         validated_data = {k: v for k, v in validated_data.items() if v not in [None, ""]}
