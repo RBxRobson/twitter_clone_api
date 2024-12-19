@@ -18,7 +18,10 @@ class CommentViewSet(viewsets.ModelViewSet):
     # Define automaticamente o user com base no usuário autenticado e o post de acordo com o id na rota
     def perform_create(self, serializer):
         post = Post.objects.get(id=self.kwargs['post_pk'])
-        parent_comment = Comment.objects.get(post_id=post, parent_comment=self.kwargs['comment_pk'])
+        parent_comment = None
+        # Tenta obter o 'comment_pk' da URL, mas se não existir, será None
+        if 'comment_pk' in self.kwargs:
+            parent_comment = Comment.objects.get(post_id=post, id=self.kwargs['comment_pk'])
         
         # Validação de post
         if not post:
