@@ -3,7 +3,7 @@ from django.urls import reverse
 from accounts.factories import UserFactory
 
 """
-    Função de testes para criar um usuário 
+    Função para testes para criar um usuário 
 """
 def create_user():
     from accounts.serializers import UserCreateSerializer
@@ -27,7 +27,7 @@ def create_user():
     return user, data
 
 """
-    Função de testes para logar usuário
+    Função para testes para logar usuário
 """ 
 def perform_login(api_client, email, password):
     login_url = reverse('login')
