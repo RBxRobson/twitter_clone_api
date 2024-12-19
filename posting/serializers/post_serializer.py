@@ -49,8 +49,11 @@ class PostSerializer(serializers.ModelSerializer):
         return obj.interactions.filter(post_type=Post.QUOTE).count()
 
     def validate(self, data):
-        # Validação permanece a mesma
-        post_type = data.get('post_type')
+        # Obtém o objeto atual (para requisições PUT)
+        instance = self.instance
+    
+        # Obtém o valor atual de `post_type` do objeto caso não esteja nos dados
+        post_type = data.get('post_type', instance.post_type if instance else None)
         content = data.get('content', '').strip()
         original_post = data.get('original_post')
 
