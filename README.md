@@ -173,6 +173,7 @@ Todas as operações nesta seção requerem autenticação via token JWT, gerado
 
 ```json
 {
+  "type_post": "tipo da postagem(original, quote ou repost)",
   "content": "string"
 }
 ```
