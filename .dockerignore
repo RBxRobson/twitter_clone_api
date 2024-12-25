@@ -1,0 +1,29 @@
+# Ignorar arquivos de sistema
+.DS_Store
+Thumbs.db
+
+# Ignorar diretórios e arquivos específicos do ambiente
+node_modules/
+venv/
+.venv/
+.env
+
+# Ignorar arquivos de controle de versão
+.git/
+.gitignore
+
+# Ignorar arquivos de log
+*.log
+
+# Ignorar arquivos temporários de editor
+*.swp
+*.swo
+
+# Ignorar arquivos de compilação ou dependências específicas
+*.pyc
+*.pyo
+__pycache__/
+
+# Ignorar arquivos de configuração de IDEs
+.vscode/
+.idea/
