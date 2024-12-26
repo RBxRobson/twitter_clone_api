@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
+import sys
 from pathlib import Path
 from datetime import timedelta
 import environ
@@ -107,6 +108,14 @@ DATABASES = {
         "PORT": env("DB_PORT"),
     }
 }
+
+# Banco de dados específico para os testes
+if 'test' in sys.argv or 'pytest' in sys.modules:
+    DEBUG = False
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 
 # Define os IPs internos para uso durante o desenvolvimento
 INTERNAL_IPS = [
