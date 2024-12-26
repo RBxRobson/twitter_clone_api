@@ -39,6 +39,10 @@ class User(AbstractBaseUser):
         blank=True
     )
 
+    # Campos de tracking
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
     # Status do usuário
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
