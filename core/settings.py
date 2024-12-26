@@ -148,11 +148,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")  # Diretório onde os arquivos estáticos serão coletados
+STATIC_ROOT = os.path.join(BASE_DIR, "static")  # Diretório onde os arquivos estáticos serão coletados
 
 # Media files (uploads de usuários, etc.)
 MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "mediafiles")  # Diretório para arquivos de mídia
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")  # Diretório para arquivos de mídia
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
