@@ -8,13 +8,14 @@ class UserDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'name', 'email', 'profile', 'followers_count', 'following_count']
+        fields = ['id', 'username', 'name', 'email', 'profile', 'followers_count', 'following_count', 'created_at', 'updated_at']
 
     def get_profile(self, instance):
         return {
             'bio': instance.profile.bio,
             'avatar': instance.profile.avatar.url,
-            'header': instance.profile.header.url
+            'header': instance.profile.header.url,
+            'updated_at': instance.profile.updated_at
         }
 
     def get_followers_count(self, instance):
