@@ -47,7 +47,7 @@ def test_user_creation_error_email_already_in_use(cleanup_media_and_users):
 
     # Verifica se o erro de email já em uso foi gerado
     assert 'email' in serializer.errors
-    assert 'user with this email already exists.' in serializer.errors['email'][0]
+    assert 'user com este email já existe.' in serializer.errors['email'][0]
 
 # Testa se o erro para email com formato inválido está sendo disparado
 @pytest.mark.django_db
@@ -67,5 +67,5 @@ def test_user_creation_error_email_invalid_format():
 
     # Verifica se o erro de formato de email foi gerado
     assert 'email' in serializer.errors
-    assert 'Enter a valid email address.' in serializer.errors['email'][0]
+    assert 'Insira um endereço de email válido.' in serializer.errors['email'][0]
 
