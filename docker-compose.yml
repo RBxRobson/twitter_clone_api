@@ -1,0 +1,36 @@
+services:
+  db:
+    image: mysql:8.0
+    ports:
+      - 3306:3306
+    volumes:
+      - mysql_data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    networks:
+      - backend
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - app_data:/usr/src/app/
+    ports:
+      - 8000:8000
+    env_file:
+      - .env
+    networks:
+      - backend
+    depends_on:
+      - db
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  app_data:
