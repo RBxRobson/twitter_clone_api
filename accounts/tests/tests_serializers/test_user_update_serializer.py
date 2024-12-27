@@ -1,7 +1,8 @@
 import pytest
-from accounts.serializers import  UserUpdateSerializer
+from accounts.serializers import UserUpdateSerializer
 from accounts.utils import create_image
 from core.utils import create_user
+
 
 # Função para disparar a atualização de apenas um campo
 def update_user_unique_key(key: str, value: str, assertion=None, profile=False):
@@ -31,40 +32,34 @@ def update_user_unique_key(key: str, value: str, assertion=None, profile=False):
         updated_value = getattr(user, key)
 
     # Verifica se o valor foi atualizado corretamente
-    assert updated_value == expected_value, (
-        f"A chave: {key} deveria ter o valor: {expected_value}, mas seu retorno foi: {updated_value}"
-    )
+    assert (
+        updated_value == expected_value
+    ), f"A chave: {key} deveria ter o valor: {expected_value}, mas seu retorno foi: {updated_value}"
 
     return True
+
 
 # Testa atualização parcial das chaves de user e profile
 @pytest.mark.django_db
 def test_user_update_serializer_update_unique_keys(cleanup_media_and_users):
     # Testa atualização do nome
-    update_user_unique_key(
-        key="name", 
-        value="Test User Update"
-    )
+    update_user_unique_key(key="name", value="Test User Update")
 
     # Testa atualização do username
     update_user_unique_key(
-        key="username", 
-        value="test_username_10", 
-        assertion="@test_username_10"
+        key="username", value="test_username_10", assertion="@test_username_10"
     )
 
     # Testa atualização do email
-    update_user_unique_key(
-        key="email", 
-        value="testuseremail@gmail.com"
-    )
+    update_user_unique_key(key="email", value="testuseremail@gmail.com")
 
     # Testa atualização da bio
     update_user_unique_key(
         profile=True,
-        key="bio", 
+        key="bio",
         value="Bio do Test User",
     )
+
 
 # Testa atualização parcial dos campos ImageField do perfil
 @pytest.mark.django_db
@@ -81,10 +76,10 @@ def test_user_update_serializer_image_fields(cleanup_media_and_users):
     serializer.save()
 
     user.refresh_from_db()
-    assert user.profile.avatar.name.endswith(update_data["profile"]["avatar"].name), (
-        f"O campo avatar deveria conter o arquivo 'test_image.jpg', mas é '{user.profile.avatar.name}'"
-    )
-    
+    assert user.profile.avatar.name.endswith(
+        update_data["profile"]["avatar"].name
+    ), f"O campo avatar deveria conter o arquivo 'test_image.jpg', mas é '{user.profile.avatar.name}'"
+
     # Cria uma imagem válida para o campo header
     header_file = create_image()
 
@@ -95,20 +90,18 @@ def test_user_update_serializer_image_fields(cleanup_media_and_users):
     serializer.save()
 
     user.refresh_from_db()
-    assert user.profile.header.name.endswith(update_data["profile"]["header"].name), (
-        f"O campo header deveria conter o arquivo 'test_image.jpg', mas é '{user.profile.header.name}'"
-    )
+    assert user.profile.header.name.endswith(
+        update_data["profile"]["header"].name
+    ), f"O campo header deveria conter o arquivo 'test_image.jpg', mas é '{user.profile.header.name}'"
 
-# Testa atualização parcial da senha 
+
+# Testa atualização parcial da senha
 @pytest.mark.django_db
 def test_user_update_serializer_update_password(cleanup_media_and_users):
     user, _ = create_user()
 
     # Tentando atualizar a senha
-    update_data = {
-        "old_password": "Password123",
-        "password": "Password321"
-    }
+    update_data = {"old_password": "Password123", "password": "Password321"}
     serializer = UserUpdateSerializer(instance=user, data=update_data, partial=True)
 
     # Verifica se o serializer é valido e salva
@@ -118,6 +111,7 @@ def test_user_update_serializer_update_password(cleanup_media_and_users):
     user.refresh_from_db()
     # Verifica se atualizou a senha corretamente
     assert user.check_password(update_data["password"])
+
 
 # Testa atualização completa dos dados de um usuário
 @pytest.mark.django_db
@@ -134,11 +128,7 @@ def test_user_update_serializer_complete_update(cleanup_media_and_users):
         "username": "test_user_10",
         "old_password": "Password123",
         "password": "Password321",
-        "profile": {
-            "bio": "Bio Test User",
-            "avatar": image,
-            "header": image
-        }
+        "profile": {"bio": "Bio Test User", "avatar": image, "header": image},
     }
     serializer = UserUpdateSerializer(instance=user, data=update_data, partial=True)
 

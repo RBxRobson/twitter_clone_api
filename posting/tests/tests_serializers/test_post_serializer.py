@@ -4,13 +4,14 @@ from posting.factories import PostFactory
 from posting.serializers import PostSerializer
 from posting.utils import create_post
 
+
 # Testa se uma postagem original está sendo criada corretamente
 @pytest.mark.django_db
 def test_post_original_creation():
     post, user = create_post()
 
     # Instancia o serializer passando os dados do post
-    serializer = PostSerializer(post)  
+    serializer = PostSerializer(post)
 
     # Verifica os dados serializados
     assert serializer.data
@@ -21,6 +22,7 @@ def test_post_original_creation():
     # Verificação da existência no banco de dados
     assert Post.objects.filter(id=post.id).exists()
 
+
 # Testa se uma repostagem está sendo criada corretamente
 @pytest.mark.django_db
 def test_post_repost_creation():
@@ -30,7 +32,7 @@ def test_post_repost_creation():
     repost = PostFactory.create(user=user, post_type=Post.REPOST, original_post=post)
 
     # Instancia o serializer passando os dados do post
-    serializer = PostSerializer(repost)  
+    serializer = PostSerializer(repost)
 
     # Verifica os dados serializados
     assert serializer.data
@@ -41,6 +43,7 @@ def test_post_repost_creation():
     # Verificação da existência no banco de dados
     assert Post.objects.filter(id=repost.id).exists()
 
+
 # Testa se uma citação está sendo criada corretamente
 @pytest.mark.django_db
 def test_post_quote_creation():
@@ -50,7 +53,7 @@ def test_post_quote_creation():
     quote = PostFactory.create(user=user, post_type=Post.QUOTE, original_post=post)
 
     # Instancia o serializer passando os dados do post
-    serializer = PostSerializer(quote)  
+    serializer = PostSerializer(quote)
 
     # Verifica os dados serializados
     assert serializer.data

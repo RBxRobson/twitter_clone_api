@@ -4,6 +4,7 @@ from accounts.factories import UserFactory
 from posting.factories import PostFactory
 from posting.models import Comment
 
+
 class CommentFactory(DjangoModelFactory):
     class Meta:
         model = Comment
@@ -11,5 +12,5 @@ class CommentFactory(DjangoModelFactory):
 
     user = factory.SubFactory(UserFactory)
     post = factory.SubFactory(PostFactory)
-    content = factory.Faker('text', max_nb_chars=280)
+    content = factory.Faker("text", max_nb_chars=280)
     parent_comment = None

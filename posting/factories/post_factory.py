@@ -3,6 +3,7 @@ from factory.django import DjangoModelFactory
 from accounts.factories import UserFactory
 from posting.models import Post
 
+
 class PostFactory(DjangoModelFactory):
     class Meta:
         model = Post
@@ -16,8 +17,10 @@ class PostFactory(DjangoModelFactory):
     def content(self):
         if self.post_type == Post.REPOST:
             return ""
-        else: 
-            return factory.Faker('text', max_nb_chars=280).evaluate(None, None, {'locale': None})
+        else:
+            return factory.Faker("text", max_nb_chars=280).evaluate(
+                None, None, {"locale": None}
+            )
 
     @factory.post_generation
     # Define um post original ao criar reposts ou quotes.

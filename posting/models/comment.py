@@ -2,17 +2,14 @@ from django.db import models
 from accounts.models import User
 from .post import Post
 
+
 class Comment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comments")
-    
+
     # O comentário pode ser diretamente em um post ou resposta a outro comentário desse post
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
     parent_comment = models.ForeignKey(
-        'self', 
-        null=True, 
-        blank=True, 
-        on_delete=models.CASCADE, 
-        related_name="replies"
+        "self", null=True, blank=True, on_delete=models.CASCADE, related_name="replies"
     )
 
     # Conteúdo do comentário
@@ -24,7 +21,7 @@ class Comment(models.Model):
 
     class Meta:
         # Ordena os comentários mais recentes primeiro
-        ordering = ['-created_at']
+        ordering = ["-created_at"]
 
     def __str__(self):
         if self.parent_comment:
