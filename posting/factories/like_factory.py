@@ -4,6 +4,7 @@ from accounts.factories import UserFactory
 from posting.factories import PostFactory, CommentFactory
 from posting.models import Like
 
+
 class LikeFactory(DjangoModelFactory):
     class Meta:
         model = Like

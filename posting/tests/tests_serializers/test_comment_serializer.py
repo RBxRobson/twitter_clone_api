@@ -3,6 +3,7 @@ from posting.models import Comment
 from posting.serializers import CommentSerializer
 from posting.utils import create_comment, create_reply_comment
 
+
 # Testa se um comentário está sendo criado corretamente
 @pytest.mark.django_db
 def test_comment_creation():
@@ -18,6 +19,7 @@ def test_comment_creation():
 
     # Verificação da existência no banco de dados
     assert Comment.objects.filter(id=comment.id).exists()
+
 
 # Testa se um comentário resposta está sendo criado corretamente
 @pytest.mark.django_db

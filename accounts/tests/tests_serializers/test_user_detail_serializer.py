@@ -2,6 +2,7 @@ import pytest
 from accounts.serializers import UserDetailSerializer
 from core.utils import create_user
 
+
 @pytest.mark.django_db
 def test_user_detail_serializer(cleanup_media_and_users):
     user, _ = create_user()
@@ -16,6 +17,5 @@ def test_user_detail_serializer(cleanup_media_and_users):
     assert data_serializer["name"] == user.name
     assert data_serializer["email"] == user.email
     assert data_serializer["profile"]["bio"] == user.profile.bio
-    assert data_serializer["profile"]["avatar"] == f'/media/{user.profile.avatar.name}'
-    assert data_serializer["profile"]["header"] == f'/media/{user.profile.header.name}'
-
+    assert data_serializer["profile"]["avatar"] == f"/media/{user.profile.avatar.name}"
+    assert data_serializer["profile"]["header"] == f"/media/{user.profile.header.name}"

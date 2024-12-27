@@ -8,6 +8,8 @@ from accounts.models import User
     Caso o nome gerado já exista, adiciona 
     um sufixo numérico para garantir a unicidade.
 """
+
+
 def get_unique_username(name):
     base_username = f"@{name.lower().replace(' ', '_')}"
     username = base_username
@@ -19,12 +21,17 @@ def get_unique_username(name):
 
     return username
 
+
 """
     Função para gerar uma imagem para testes de campos ImageField
 """
+
+
 def create_image():
-    image = Image.new('RGB', (100, 100), color=(73, 109, 137))
+    image = Image.new("RGB", (100, 100), color=(73, 109, 137))
     img_byte_arr = BytesIO()
-    image.save(img_byte_arr, format='JPEG')
+    image.save(img_byte_arr, format="JPEG")
     img_byte_arr.seek(0)
-    return SimpleUploadedFile("test_image.jpg", img_byte_arr.read(), content_type="image/jpeg")
+    return SimpleUploadedFile(
+        "test_image.jpg", img_byte_arr.read(), content_type="image/jpeg"
+    )

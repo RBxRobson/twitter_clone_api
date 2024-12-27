@@ -3,6 +3,7 @@ from posting.models import Like
 from posting.serializers import LikeSerializer
 from posting.utils import create_post, create_like, create_comment, create_reply_comment
 
+
 # Testa se um like em uma postagem está sendo criado corretamente
 @pytest.mark.django_db
 def test_like_post_creation():
@@ -22,6 +23,7 @@ def test_like_post_creation():
 
     # Verificação da existência no banco de dados
     assert Like.objects.filter(id=like.id).exists()
+
 
 # Testa se um like em um comentário está sendo criado corretamente
 @pytest.mark.django_db
@@ -43,6 +45,7 @@ def test_like_comment_creation():
     # Verificação da existência no banco de dados
     assert Like.objects.filter(id=like.id).exists()
 
+
 # Testa se um like em um comentário resposta está sendo criado corretamente
 @pytest.mark.django_db
 def test_like_reply_creation():
@@ -62,5 +65,3 @@ def test_like_reply_creation():
 
     # Verificação da existência no banco de dados
     assert Like.objects.filter(id=like.id).exists()
-
-

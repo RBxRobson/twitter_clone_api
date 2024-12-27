@@ -1,15 +1,16 @@
 from django.db import models
 from accounts.models import User
 
+
 class Post(models.Model):
-    ORIGINAL = 'original'
-    REPOST = 'repost'
-    QUOTE = 'quote'
+    ORIGINAL = "original"
+    REPOST = "repost"
+    QUOTE = "quote"
 
     POST_TYPES = [
-        (ORIGINAL, 'Original'),
-        (REPOST, 'Repost'),
-        (QUOTE, 'Quote'),
+        (ORIGINAL, "Original"),
+        (REPOST, "Repost"),
+        (QUOTE, "Quote"),
     ]
 
     # Relaciona o post a um usuário
@@ -20,15 +21,15 @@ class Post(models.Model):
 
     # Post original, se for repost ou quote
     original_post = models.ForeignKey(
-        'self', 
-        null=True, 
-        blank=True, 
-        on_delete=models.CASCADE, 
-        related_name="interactions"
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="interactions",
     )
 
     # Conteúdo do post (só será usado em posts originais e quotes)
-    content = models.TextField(max_length=280, blank=True, default='')
+    content = models.TextField(max_length=280, blank=True, default="")
 
     # Campos de tracking
     created_at = models.DateTimeField(auto_now_add=True)
@@ -36,7 +37,7 @@ class Post(models.Model):
 
     class Meta:
         # Exibe os posts mais recentes primeiro
-        ordering = ['-created_at']
+        ordering = ["-created_at"]
 
     def __str__(self):
         if self.post_type == self.ORIGINAL:

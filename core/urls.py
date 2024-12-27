@@ -25,9 +25,9 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("accounts.urls")),
     path("postings/", include("posting.urls")),
-    path("", views.read_readme, name="home")
+    path("", views.read_readme, name="home"),
 ]
 
 # Apenas no ambiente de desenvolvimento
-if settings.DEBUG:  
+if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

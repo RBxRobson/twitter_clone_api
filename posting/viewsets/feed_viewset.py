@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from posting.models import Post
 from posting.serializers import PostSerializer
 
+
 class FeedViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
@@ -15,9 +16,9 @@ class FeedViewSet(viewsets.ViewSet):
         following = user.following.all()
 
         # Filtra as postagens feitas pelos usuários que ele segue
-        posts = Post.objects.filter(user__in=following).order_by('-created_at')
+        posts = Post.objects.filter(user__in=following).order_by("-created_at")
 
         # Serializa as postagens
-        serializer = PostSerializer(posts, many=True, context={'request': request})
+        serializer = PostSerializer(posts, many=True, context={"request": request})
 
         return Response(serializer.data)
