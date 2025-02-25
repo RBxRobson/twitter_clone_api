@@ -1,21 +1,20 @@
 from rest_framework import serializers
 from posting.models import Post
 
-
 class PostSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(read_only=True)
     user_details = serializers.SerializerMethodField()
-
-    # Representação de original_post
     original_post = serializers.PrimaryKeyRelatedField(
         queryset=Post.objects.all(), required=False, allow_null=True
     )
-
-    # Campos read-only para os contadores de interações
+    
     likes_count = serializers.SerializerMethodField()
     comments_count = serializers.SerializerMethodField()
     reposts_count = serializers.SerializerMethodField()
     quotes_count = serializers.SerializerMethodField()
+    is_liked = serializers.SerializerMethodField()
+    is_reposted = serializers.SerializerMethodField()
+    is_following_author = serializers.SerializerMethodField() 
 
     class Meta:
         model = Post
@@ -32,6 +31,9 @@ class PostSerializer(serializers.ModelSerializer):
             "comments_count",
             "reposts_count",
             "quotes_count",
+            "is_liked",
+            "is_reposted",
+            "is_following_author",
         ]
         read_only_fields = [
             "created_at",
@@ -42,10 +44,18 @@ class PostSerializer(serializers.ModelSerializer):
             "comments_count",
             "reposts_count",
             "quotes_count",
+            "is_liked",
+            "is_reposted",
+            "is_following_author"
         ]
 
+    def get_original_post(self, obj):
+        """Retorna os detalhes completos do post original em vez do ID."""
+        if obj.original_post:
+            return PostSerializer(obj.original_post, context=self.context).data
+        return None
+
     def get_user_details(self, obj):
-        # Obtém o perfil do usuário associado e retorna os dados completos
         profile = obj.user.profile
         return {
             "id": obj.user.id,
@@ -58,13 +68,34 @@ class PostSerializer(serializers.ModelSerializer):
         return obj.likes.count()
 
     def get_comments_count(self, obj):
-        return obj.comments.count()
+        return Post.objects.filter(original_post=obj, post_type=Post.COMMENT).count()
+
 
     def get_reposts_count(self, obj):
         return obj.interactions.filter(post_type=Post.REPOST).count()
 
     def get_quotes_count(self, obj):
         return obj.interactions.filter(post_type=Post.QUOTE).count()
+
+    def get_is_liked(self, obj):
+        # Checa se o usuário atual (obtido do request) curtiu o post
+        user = self.context.get("request").user
+        return obj.likes.filter(user=user).exists()
+
+    def get_is_reposted(self, obj):
+        # Checa se o usuário atual fez um repost
+        user = self.context.get("request").user
+        repost = obj.interactions.filter(user=user, post_type=Post.REPOST).first()
+    
+        return repost.id if repost else False
+    
+    def get_is_following_author(self, obj):
+        # Verifica se o usuário autenticado segue o autor da postagem.
+        request = self.context.get("request")
+        if request.user.id == obj.user.id:
+            return None
+
+        return obj.user.followers.filter(id=request.user.id).exists()
 
     def validate(self, data):
         # Obtém o objeto atual (para requisições PUT)
@@ -77,7 +108,7 @@ class PostSerializer(serializers.ModelSerializer):
 
         if not post_type:
             raise serializers.ValidationError(
-                "O campo post_type é obrigatório (original, repost ou quote)."
+                "O campo post_type é obrigatório (original, repost, quote ou comment)."
             )
 
         # Validações para postagens originais
@@ -93,10 +124,6 @@ class PostSerializer(serializers.ModelSerializer):
 
         # Validações para citações
         if post_type == Post.QUOTE:
-            if original_post and original_post.post_type != Post.ORIGINAL:
-                raise serializers.ValidationError(
-                    "A citação deve referenciar uma postagem original."
-                )
             if not original_post:
                 raise serializers.ValidationError(
                     "Uma citação deve referenciar um post original."
@@ -108,10 +135,10 @@ class PostSerializer(serializers.ModelSerializer):
 
         # Validações para reposts
         if post_type == Post.REPOST:
-            if original_post and original_post.post_type != Post.ORIGINAL:
+            if original_post and original_post.post_type == Post.REPOST:
                 raise serializers.ValidationError(
-                    "Um repost deve referenciar uma postagem original."
-                )
+                    "Um repost deve referenciar uma postagem original, ou uma citação."
+                )   
             if not original_post:
                 raise serializers.ValidationError(
                     "Um repost deve referenciar um post original."
@@ -121,29 +148,46 @@ class PostSerializer(serializers.ModelSerializer):
                     "Um repost não pode ter conteúdo autoral."
                 )
 
+        # Validações para comentários
+        if post_type == Post.COMMENT:
+            if original_post and original_post.post_type == Post.REPOST:
+                raise serializers.ValidationError(
+                    "Um comentário deve referenciar uma postagem original, uma citação ou outro comentário"
+                )   
+            if not original_post:
+                raise serializers.ValidationError(
+                    "Um comentário deve referenciar algum comentário ou postagem."
+                )
+            if not content:
+                raise serializers.ValidationError(
+                    "Um comentário deve ter conteúdo."
+                )
+    
         return data
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
+        request = self.context.get("request")
+
+        # Se for um GET, trocar o ID pelo objeto serializado
+        if instance.original_post:
+            representation["original_post"] = self.get_original_post(instance)
 
         # Método GET resposta
-        request = self.context.get("request")
         if request and request.method == "GET":
             representation.pop("user", None)
 
-        # Método Post resposta
-        request = self.context.get("request")
+        # Método POST resposta
         if request and request.method == "POST":
             representation.pop("user_details", None)
 
-        # Remove contadores irrelevantes para QUOTE e REPOST
-        if instance.post_type in [Post.QUOTE, Post.REPOST]:
-            representation.pop("reposts_count", None)
-            representation.pop("quotes_count", None)
-
         # Remove contadores irrelevantes para REPOST
         if instance.post_type == Post.REPOST:
+            representation.pop("reposts_count", None)
+            representation.pop("quotes_count", None)
             representation.pop("likes_count", None)
             representation.pop("comments_count", None)
+            representation.pop("is_liked", None)
+            representation.pop("is_reposted", None)
 
         return representation
