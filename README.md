@@ -16,7 +16,7 @@ Este documento serve como referência para as rotas e funcionalidades disponíve
 
 ```json
 {
-  "username": "string",
+  "email": "string",
   "password": "string"
 }
 ```
@@ -46,8 +46,14 @@ Este documento serve como referência para as rotas e funcionalidades disponíve
 
 #### Detalhes do Usuário
 
-- URL: `URLAPP/accounts/users/{USER_ID}/`
+- URL: `URLAPP/accounts/users/{USER_ID|USERNAME}/`
 - Método: GET
+
+#### Detalhes do Usuário Ativo
+
+- URL: `URLAPP/accounts/users/me/`
+- Método: GET
+- Necessita Token Jwt
 
 #### Listagem de seguidores
 
@@ -58,6 +64,22 @@ Este documento serve como referência para as rotas e funcionalidades disponíve
 
 - URL: `URLAPP/accounts/users/{USER_ID}/following/`
 - Método: GET
+
+#### Listagem de recomendações para seguir
+
+- URL: `URLAPP/accounts/users/{USER_ID}/recommendations/`
+- Método: GET
+
+#### Postagens de um usuário
+
+- URL: `URLAPP/accounts/users/{USER_ID|USERNAME}/posts/`
+- Método: GET
+
+#### Pesquisar Usuários
+
+- URL: `URLAPP/accounts/users/search/?q={DATA_SEARCH}`
+- Método: PUT/PATCH
+- Formato JSON:
 
 #### Seguir ou deixar de seguir
 
@@ -74,6 +96,7 @@ Este documento serve como referência para as rotas e funcionalidades disponíve
 ```json
 {
   "name": "string (opcional)",
+  "username": "string (opcional)",
   "email": "string (opcional)",
   "password": "string (opcional)",
   "old_password": "string (obrigatório para alteração de senha)",
@@ -92,6 +115,7 @@ Este documento serve como referência para as rotas e funcionalidades disponíve
 #### Observação
 
 Todas as operações nesta seção requerem autenticação via token JWT, gerado no login.
+Os comentários são tratados como um tipo de postagem.
 
 #### Lista de Postagens
 
@@ -113,14 +137,10 @@ Todas as operações nesta seção requerem autenticação via token JWT, gerado
 - URL: `URLAPP/postings/posts/{POST_ID}/comments/`
 - Método: GET
 
-#### Lista de Likes de um comentário
+#### Lista de Citações e Repostagens de uma postagem
 
-- URL: `URLAPP/postings/posts/{POST_ID}/comments/{COMMENT_ID}/likes/`
-- Método: GET
-
-#### Lista de respostas de um comentário
-
-- URL: `URLAPP/postings/posts/{POST_ID}/comments/{COMMENT_ID}/replies/`
+- URL: `URLAPP/postings/posts/{POST_ID}/quotes/`
+- URL: `URLAPP/postings/posts/{POST_ID}/reposts/`
 - Método: GET
 
 #### Criação de Postagem
@@ -131,13 +151,15 @@ Todas as operações nesta seção requerem autenticação via token JWT, gerado
 
 ```json
 {
-  "content": "string"
+  "post_type": "(comment, original, quote ou repost)",
+  "content": "string",
+  "original_post": "(Obrigatório para postagens que não são originais)"
 }
 ```
 
-### Interações com Postagens
+### Interações com Postagens e Comentários
 
-#### Repostar ou Citar uma Postagem
+#### Repostar ou Citar
 
 - URL: `URLAPP/postings/posts/`
 - Método: POST
@@ -146,7 +168,7 @@ Todas as operações nesta seção requerem autenticação via token JWT, gerado
 ```json
 {
   "post_type": "repost",
-  "original_post": "integer (ID da postagem)"
+  "original_post": "id do post original"
 }
 ```
 
@@ -154,18 +176,18 @@ Todas as operações nesta seção requerem autenticação via token JWT, gerado
 
 ```json
 {
-  "original_post": "integer (ID da postagem)",
-  "content": "string",
-  "post_type": "quote"
+  "post_type": "quote",
+  "original_post": "id do post original",
+  "content": "string"
 }
 ```
 
-#### Curtir uma Postagem
+#### Curtir
 
 - URL: `URLAPP/postings/posts/{POST_ID}/likes/`
 - Método: POST
 
-#### Comentar em uma Postagem
+#### Comentar
 
 - URL: `URLAPP/postings/posts/{POST_ID}/comments/`
 - Método: POST
@@ -173,24 +195,6 @@ Todas as operações nesta seção requerem autenticação via token JWT, gerado
 
 ```json
 {
-  "type_post": "tipo da postagem(original, quote ou repost)",
   "content": "string"
 }
 ```
-
-#### Responder a um Comentário
-
-- URL: `URLAPP/postings/posts/{POST_ID}/comments/{COMMENT_ID}/replies/`
-- Método: POST
-- Campos JSON:
-
-```json
-{
-  "content": "string"
-}
-```
-
-#### Curtir um Comentário
-
-- URL: `URLAPP/postings/posts/{POST_ID}/comments/{COMMENT_ID}/likes/`
-- Método: POST
