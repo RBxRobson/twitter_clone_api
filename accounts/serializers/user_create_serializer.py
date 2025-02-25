@@ -1,10 +1,20 @@
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 from django.core.validators import MinLengthValidator, RegexValidator
 from accounts.models import User, Profile
 from accounts.utils import get_unique_username
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(
+        required=True,
+        validators=[
+            UniqueValidator(
+                queryset=User.objects.all(),
+                message="Já existe um usuário com este e-mail."
+            ),
+        ]
+    )
     password = serializers.CharField(
         write_only=True,
         required=True,
@@ -22,13 +32,17 @@ class UserCreateSerializer(serializers.ModelSerializer):
         model = User
         fields = ["id", "name", "email", "password"]
         extra_kwargs = {
-            "password": {"write_only": True}  # Garantir que a senha não seja retornada
+            # Garante que a senha não seja retornada
+            "password": {"write_only": True}
         }
 
-    def create(self, validated_data):
+    def validate(self, data):
         # Gera um nome de usuário único
-        validated_data["username"] = get_unique_username(validated_data.get("name"))
+        data["username"] = get_unique_username(data.get("name"))
 
+        return data
+
+    def create(self, validated_data):
         password = validated_data.pop("password")
         user = User(**validated_data)
         user.set_password(password)

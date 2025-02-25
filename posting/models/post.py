@@ -6,20 +6,20 @@ class Post(models.Model):
     ORIGINAL = "original"
     REPOST = "repost"
     QUOTE = "quote"
+    COMMENT = "comment"
 
     POST_TYPES = [
         (ORIGINAL, "Original"),
         (REPOST, "Repost"),
         (QUOTE, "Quote"),
+        (COMMENT, "Comment"),
     ]
 
-    # Relaciona o post a um usuário
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts")
 
-    # Tipo de post (original, repost ou quote)
     post_type = models.CharField(max_length=10, choices=POST_TYPES, default=ORIGINAL)
 
-    # Post original, se for repost ou quote
+    # Relacionamento para reposts, quotes e comentários
     original_post = models.ForeignKey(
         "self",
         null=True,
@@ -28,15 +28,13 @@ class Post(models.Model):
         related_name="interactions",
     )
 
-    # Conteúdo do post (só será usado em posts originais e quotes)
+    # Conteúdo do post
     content = models.TextField(max_length=280, blank=True, default="")
 
-    # Campos de tracking
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        # Exibe os posts mais recentes primeiro
         ordering = ["-created_at"]
 
     def __str__(self):
@@ -46,3 +44,5 @@ class Post(models.Model):
             return f"Citação de {self.user.username} sobre {self.original_post.id}: {self.content[:30]}..."
         elif self.post_type == self.REPOST:
             return f"Repost de {self.user.username} sobre {self.original_post.id}"
+        elif self.post_type == self.COMMENT:
+            return f"Comentário de {self.user.username} em {self.original_post.id}: {self.content[:30]}..."

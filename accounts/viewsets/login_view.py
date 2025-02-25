@@ -3,7 +3,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from accounts.models import User  # Aqui está o modelo customizado de usuário
-from django.contrib.auth import authenticate
 
 
 class LoginView(APIView):
@@ -23,13 +22,20 @@ class LoginView(APIView):
             user = User.objects.get(email=email)
         except User.DoesNotExist:
             return Response(
-                {"detail": "Email inválido."}, status=status.HTTP_401_UNAUTHORIZED
+                {
+                    "fields": ["email"],
+                    "detail": "Nenhum usuário encontrado com esse email."
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
             )
 
         # Verificar se a senha fornecida corresponde à do usuário
         if not user.check_password(password):
             return Response(
-                {"detail": "Credenciais inválidas."},
+                {
+                    "fields": ["email", "password"],
+                    "detail": "Email ou senha inválido."
+                },
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
