@@ -1,3 +1,4 @@
+import unicodedata
 from rest_framework import serializers
 from accounts.models import User
 from .profile_serializer import ProfileSerializer
@@ -74,12 +75,24 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         return attrs
 
     def validate_username(self, value):
+        # Remove acentos do valor
+        value_no_accents = ''.join(
+            c for c in unicodedata.normalize('NFD', value) if unicodedata.category(c) != 'Mn'
+        )
+        
         # Verifica se o valor contém apenas caracteres permitidos
-        if not value.replace("_", "").isalnum():
+        if not value_no_accents.replace("_", "").isalnum():
             raise serializers.ValidationError(
-                "O username pode conter apenas letras, números e o caractere '_' e não pode conter espaços ou outros caracteres especiais."
+                "O username pode conter apenas letras, números e o caractere '_' e não pode conter espaços ou outros caracteres especiais, incluindo acentuação."
             )
-        return value
+        
+        # Verifica se o username já existe
+        if User.objects.filter(username=value_no_accents).exists():
+            raise serializers.ValidationError(
+            "Este nome de usuário já está em uso. Por favor, escolha outro."
+        )
+        
+        return value_no_accents
 
     def update(self, instance, validated_data):
         profile_data = validated_data.pop("profile", None)
@@ -87,11 +100,11 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         # Remove a senha antiga dos dados validados
         validated_data.pop("old_password", None)
 
-        # Limpa campos vazios de validated_data para evitar sobrescrita no banco
+        # Limpa campos vazios, exceto o campo `bio` dentro de `profile`
         validated_data = {
             k: v for k, v in validated_data.items() if v not in [None, ""]
         }
-
+        
         # Adiciona o '@' ao username se ele estiver presente em validated_data
         if "username" in validated_data:
             validated_data["username"] = f"@{validated_data['username']}"
@@ -100,17 +113,18 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         if "password" in validated_data:
             instance.set_password(validated_data.pop("password"))
 
-        # Atualiza os campos principais do usuário
+        # Atualiza os campos do usuário
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
 
         instance.save()
 
-        # Atualiza o perfil, se dados do perfil forem fornecidos
+        # Atualiza o perfil, mantendo `bio` como um campo que pode ser vazio
         if profile_data:
             profile = instance.profile
             for attr, value in profile_data.items():
-                setattr(profile, attr, value)
+                if value not in [None, ""] or attr == "bio":  # Permite apenas bio ser vazio
+                    setattr(profile, attr, value)
 
             profile.save()
 
