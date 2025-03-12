@@ -1,18 +1,16 @@
-from posting.factories import PostFactory, CommentFactory, LikeFactory
-from posting.models import Comment, Post
+from posting.factories import PostFactory, LikeFactory
+from posting.models import Post
 from core.utils import create_user
 
 """
     Função para testes para criar uma postagem
 """
-
-
 def create_post():
     # Cria o usuário para o teste
     user, _ = create_user()
 
     # Cria um post salvo no banco de dados usando a factory
-    post = PostFactory.create(user=user, post_type="original")
+    post = PostFactory.create(user=user, post_type=Post.ORIGINAL)
 
     return post, user
 
@@ -20,12 +18,11 @@ def create_post():
 """
     Função para testes para criar um comentário
 """
-
-
 def create_comment():
-    post, user = create_post()
+    post_original, user = create_post()
 
-    comment = CommentFactory.create(user=user, post=post)
+    # Cria um comentário salvo no banco de dados usando a factory
+    comment = PostFactory.create(user=user, post_type=Post.COMMENT, original_post=post_original)
 
     return comment, user
 
@@ -33,13 +30,14 @@ def create_comment():
 """
     Função para testes para criar um comentário de resposta
 """
-
-
 def create_reply_comment():
     post, user = create_post()
 
-    comment = CommentFactory.create(user=user, post=post)
-    reply = CommentFactory.create(user=user, post=post, parent_comment=comment)
+    # Cria um comentário em um post
+    comment = PostFactory.create(user=user, post_type=Post.COMMENT, original_post=post)
+
+    # Cria uma resposta para o comentário
+    reply = PostFactory.create(user=user, post_type=Post.COMMENT, original_post=comment)
 
     return reply, comment
 
@@ -47,17 +45,11 @@ def create_reply_comment():
 """
     Função para testes para criar um like
 """
-
-
-def create_like(arg: Comment | Post):
+def create_like(arg: Post):
     # Cria o usuário para o teste
     user, _ = create_user()
 
-    # Verifica se o argumento é uma instância de Comment
-    if isinstance(arg, Comment):
-        like = LikeFactory.create(user=user, comment=arg, post=None)
-    # Se não for, será uma instância de Post
-    else:
-        like = LikeFactory.create(user=user, post=arg, comment=None)
+    # Cria um like para o post (seja original, repost, quote ou comment)
+    like = LikeFactory.create(user=user, post=arg)
 
     return like
