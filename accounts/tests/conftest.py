@@ -6,11 +6,16 @@ from accounts.models import User
 """
     Função para limpar as imagens após os testes
 """
-
-
 @pytest.fixture(scope="function")
-def cleanup_media_and_users():
-    yield
+def cleanup_media_and_users(db):
+    # Limpa usuários antes do teste rodar
+    User.objects.all().delete()
+
+    yield  # Aqui o teste será executado
+
+    # Limpa usuários após o teste rodar
+    User.objects.all().delete()
+
     # Caminhos para as pastas onde as imagens são salvas
     media_root = settings.MEDIA_ROOT
     avatar_path = os.path.join(media_root, "avatars", "test_image.jpg")
@@ -22,6 +27,3 @@ def cleanup_media_and_users():
 
     if os.path.exists(header_path):
         os.remove(header_path)
-
-    # Limpa todos os usuários no final de cada teste
-    User.objects.all().delete()
