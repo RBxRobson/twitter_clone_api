@@ -31,7 +31,6 @@ def get_unique_username(name):
 
     return username
 
-
 def create_image(name="test_image.jpg", size=(100, 100), color=(73, 109, 137), format="JPEG"):
     """
     Gera uma imagem de teste para campos ImageField.
@@ -47,4 +46,7 @@ def create_image(name="test_image.jpg", size=(100, 100), color=(73, 109, 137), f
     """
     image = Image.new("RGB", size, color)
     img_byte_arr = BytesIO()
-    image.save
+    image.save(img_byte_arr, format=format)
+    img_byte_arr.seek(0)
+    
+    return SimpleUploadedFile(name, img_byte_arr.read(), content_type=f'image/{format.lower()}')
