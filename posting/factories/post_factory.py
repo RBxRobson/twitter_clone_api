@@ -11,28 +11,20 @@ class PostFactory(DjangoModelFactory):
 
     user = factory.SubFactory(UserFactory)
     post_type = Post.ORIGINAL
-
-    # Define o conteúdo condicionalmente com base no post_type
-    @factory.lazy_attribute
-    def content(self):
-        if self.post_type == Post.REPOST:
-            return ""
-        else:
-            return factory.Faker("text", max_nb_chars=280).evaluate(
-                None, None, {"locale": None}
-            )
+    content = factory.Maybe(
+        "post_type",
+        factory.Faker("text", max_nb_chars=280),
+        "",  # Se for REPOST, o conteúdo será vazio
+    )
 
     @factory.post_generation
-    # Define um post original ao criar reposts ou quotes.
     def original_post(self, create, extracted, **kwargs):
         if not create:
             return
 
-        if self.post_type in {Post.REPOST, Post.QUOTE}:
+        if self.post_type in {Post.REPOST, Post.QUOTE, Post.COMMENT}:
             if extracted:
-                # Use o post fornecido
                 self.original_post = extracted
             else:
-                # Cria um novo post original caso nenhum tenha sido fornecido
                 self.original_post = PostFactory(post_type=Post.ORIGINAL)
             self.save()

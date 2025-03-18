@@ -4,42 +4,49 @@ from PIL import Image
 from io import BytesIO
 from accounts.models import User
 
-"""
-    Gera um nome de usuário único baseado no nome fornecido.
-    Caso o nome gerado já exista, adiciona 
-    um sufixo numérico para garantir a unicidade.
-"""
-
 
 def get_unique_username(name):
+    """
+    Gera um nome de usuário único baseado no nome fornecido.
+    Remove acentos e substitui espaços por underlines.
+    Caso o nome gerado já exista, adiciona um sufixo numérico para garantir a unicidade.
+    """
+    if not name:
+        raise ValueError("O nome não pode ser vazio.")
+
     # Remove acentos do nome
     name_no_accents = ''.join(
         c for c in unicodedata.normalize('NFD', name) if unicodedata.category(c) != 'Mn'
     )
-    
-    # Cria o username base
+
+    # Cria o username base, removendo caracteres especiais e garantindo que inicie com '@'
     base_username = f"@{name_no_accents.lower().replace(' ', '_')}"
     username = base_username
     count = 1
 
-    # Verifica se o username já existe, se sim, adiciona um número
+    # Verifica se o username já existe no banco, se sim, adiciona um número
     while User.objects.filter(username=username).exists():
         username = f"{base_username}_{count}"
         count += 1
 
     return username
 
+def create_image(name="test_image.jpg", size=(100, 100), color=(73, 109, 137), format="JPEG"):
+    """
+    Gera uma imagem de teste para campos ImageField.
 
-"""
-    Função para gerar uma imagem para testes de campos ImageField
-"""
+    Parâmetros:
+        - name: Nome do arquivo (padrão: 'test_image.jpg')
+        - size: Tamanho da imagem (padrão: (100, 100))
+        - color: Cor da imagem no formato RGB (padrão: (73, 109, 137))
+        - format: Formato da imagem (padrão: 'JPEG')
 
-
-def create_image():
-    image = Image.new("RGB", (100, 100), color=(73, 109, 137))
+    Retorna:
+        - SimpleUploadedFile pronto para ser usado em testes.
+    """
+    image = Image.new("RGB", size, color)
     img_byte_arr = BytesIO()
-    image.save(img_byte_arr, format="JPEG")
+    image.save(img_byte_arr, format=format)
     img_byte_arr.seek(0)
-    return SimpleUploadedFile(
-        "test_image.jpg", img_byte_arr.read(), content_type="image/jpeg"
-    )
+    
+    return SimpleUploadedFile(name, img_byte_arr.read(), content_type=f'image/{format.lower()}')

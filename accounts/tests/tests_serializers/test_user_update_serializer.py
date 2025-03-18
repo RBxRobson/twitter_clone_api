@@ -3,7 +3,6 @@ from accounts.serializers import UserUpdateSerializer
 from accounts.utils import create_image
 from core.utils import create_user
 
-
 # Função para disparar a atualização de apenas um campo
 def update_user_unique_key(key: str, value: str, assertion=None, profile=False):
     user, _ = create_user()
@@ -45,7 +44,7 @@ def test_user_update_serializer_update_unique_keys(cleanup_media_and_users):
     # Testa atualização do nome
     update_user_unique_key(key="name", value="Test User Update")
 
-    # Testa atualização do username
+    # Testa atualização do username (deve ter o '@' adicionado)
     update_user_unique_key(
         key="username", value="test_username_10", assertion="@test_username_10"
     )
@@ -140,7 +139,7 @@ def test_user_update_serializer_complete_update(cleanup_media_and_users):
     # Verifica se atualizou os dados corretamente
     assert user.name == update_data["name"]
     assert user.email == update_data["email"]
-    assert user.username == f'@{update_data["username"]}'
+    assert user.username == f'@{update_data["username"]}'  # Verifica o '@' prefixo
     assert user.check_password(update_data["password"])
     assert user.profile.bio == update_data["profile"]["bio"]
     assert user.profile.avatar.name.endswith(update_data["profile"]["avatar"].name)
