@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "twitter-clone-api"
+name = "twitter_clone_api"
 version = "0.1.0"
 description = "Api Twitter Clone"
 authors = ["RBxRobson <robsonnbarbosa0@gmail.com>"]
