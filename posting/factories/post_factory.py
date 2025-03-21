@@ -10,12 +10,8 @@ class PostFactory(DjangoModelFactory):
         skip_postgeneration_save = True
 
     user = factory.SubFactory(UserFactory)
-    post_type = Post.ORIGINAL
-    content = factory.Maybe(
-        "post_type",
-        factory.Faker("text", max_nb_chars=280),
-        "",  # Se for REPOST, o conteúdo será vazio
-    )
+    post_type = factory.Iterator([Post.ORIGINAL, Post.REPOST, Post.QUOTE, Post.COMMENT])
+    content = factory.LazyAttribute(lambda obj: factory.Faker("text", max_nb_chars=280).generate({}) if obj.post_type != Post.REPOST else "")
 
     @factory.post_generation
     def original_post(self, create, extracted, **kwargs):
@@ -23,8 +19,5 @@ class PostFactory(DjangoModelFactory):
             return
 
         if self.post_type in {Post.REPOST, Post.QUOTE, Post.COMMENT}:
-            if extracted:
-                self.original_post = extracted
-            else:
-                self.original_post = PostFactory(post_type=Post.ORIGINAL)
+            self.original_post = extracted if extracted else PostFactory(post_type=Post.ORIGINAL)
             self.save()
