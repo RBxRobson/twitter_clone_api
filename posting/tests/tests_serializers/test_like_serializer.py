@@ -1,67 +1,44 @@
 import pytest
+from django.core.exceptions import ValidationError
+from rest_framework.test import APIRequestFactory
 from posting.models import Like
 from posting.serializers import LikeSerializer
-from posting.utils import create_post, create_like, create_comment, create_reply_comment
+from posting.utils import create_post, create_like
 
+@pytest.fixture
+def api_request_factory():
+    return APIRequestFactory()
 
-# Testa se um like em uma postagem está sendo criado corretamente
 @pytest.mark.django_db
 def test_like_post_creation():
-    # Cria uma postagem
-    post, _ = create_post()
+    """Testa a criação de um like em uma postagem"""
+    post, user = create_post()
+    like = create_like(post=post, user=user)
 
-    # Cria o like na postagem
-    like = create_like(arg=post)
-
-    # Instancia o serializer
     serializer = LikeSerializer(like)
-
-    # Verifica os dados serializados
+    
     assert serializer.data
     assert serializer.data["user"] == like.user.id
     assert serializer.data["post"] == like.post.id
-
-    # Verificação da existência no banco de dados
     assert Like.objects.filter(id=like.id).exists()
 
-
-# Testa se um like em um comentário está sendo criado corretamente
 @pytest.mark.django_db
-def test_like_comment_creation():
-    # Cria um comentário
-    comment, _ = create_comment()
+def test_like_post_creation_post_request(api_request_factory):
+    """Testa a serialização de um like via requisição POST"""
+    post, user = create_post()
+    like = create_like(post=post, user=user)
 
-    # Cria o like no comentário
-    like = create_like(arg=comment)
+    request = api_request_factory.post("/fake-url/")
+    request.user = user
+    serializer = LikeSerializer(like, context={"request": request})
 
-    # Instancia o serializer
-    serializer = LikeSerializer(like)
-
-    # Verifica os dados serializados
     assert serializer.data
-    assert serializer.data["user"] == like.user.id
-    assert serializer.data["comment"] == like.comment.id
+    assert "user_details" not in serializer.data  # Deve ser removido no POST
 
-    # Verificação da existência no banco de dados
-    assert Like.objects.filter(id=like.id).exists()
-
-
-# Testa se um like em um comentário resposta está sendo criado corretamente
 @pytest.mark.django_db
-def test_like_reply_creation():
-    # Cria um comentário resposta
-    reply, _ = create_reply_comment()
-
-    # Cria o like no comentário resposta
-    like = create_like(arg=reply)
-
-    # Instancia o serializer
-    serializer = LikeSerializer(like)
-
-    # Verifica os dados serializados
-    assert serializer.data
-    assert serializer.data["user"] == like.user.id
-    assert serializer.data["comment"] == like.comment.id
-
-    # Verificação da existência no banco de dados
-    assert Like.objects.filter(id=like.id).exists()
+def test_like_validation():
+    """Testa a validação de um like sem post"""
+    serializer = LikeSerializer(data={})
+    assert not serializer.is_valid()
+    assert "post" in serializer.errors
+    assert str(serializer.errors["post"][0]) == "Este campo é obrigatório."
