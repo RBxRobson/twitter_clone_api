@@ -39,17 +39,15 @@ def create_reply_comment():
     # Cria uma resposta para o comentário
     reply = PostFactory.create(user=user, post_type=Post.COMMENT, original_post=comment)
 
-    return reply, comment
+    return reply, user, comment
 
 
 """
     Função para testes para criar um like
 """
-def create_like(arg: Post):
-    # Cria o usuário para o teste
-    user, _ = create_user()
-
-    # Cria um like para o post (seja original, repost, quote ou comment)
-    like = LikeFactory.create(user=user, post=arg)
-
+def create_like(post: Post, user=None):
+    if user is None:
+        user, _ = create_user()
+    
+    like = LikeFactory.create(user=user, post=post)
     return like
