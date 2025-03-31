@@ -1,30 +1,14 @@
 import factory
-from factory.django import DjangoModelFactory
-from accounts.factories import UserFactory
+from faker import Faker
 from posting.models import Post
 
+faker = Faker()
 
-class PostFactory(DjangoModelFactory):
+class PostFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Post
-        skip_postgeneration_save = True
 
-    user = factory.SubFactory(UserFactory)
+    user = factory.SubFactory("core.factories.UserFactory")
+    content = factory.LazyAttribute(lambda o: "" if o.post_type == Post.REPOST else faker.text(max_nb_chars=280))
     post_type = Post.ORIGINAL
-    content = factory.Maybe(
-        "post_type",
-        factory.Faker("text", max_nb_chars=280),
-        "",  # Se for REPOST, o conteúdo será vazio
-    )
-
-    @factory.post_generation
-    def original_post(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        if self.post_type in {Post.REPOST, Post.QUOTE, Post.COMMENT}:
-            if extracted:
-                self.original_post = extracted
-            else:
-                self.original_post = PostFactory(post_type=Post.ORIGINAL)
-            self.save()
+    original_post = None
